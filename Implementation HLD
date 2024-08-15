@@ -1,0 +1,21 @@
+.
+├── Infrastructure (via Terraform)/
+│   ├── EC2 Instance (ubuntu)/
+│   │   ├── Kubernetes (via Ansible)
+│   │   ├── Private cluster
+│   │   └── Create Tunnel to Connect via SSH
+│   ├── Redis Database (store user data + terraform state + backups)
+│   ├── S3 Bucket (save user uploaded document)
+│   └── Ingress LB
+├── Application/
+│   ├── FE Application (nginx)
+│   ├── SFTP Server (Confirmation mail after user submitting data + Monitoring mails)
+│   ├── Helm Configuration
+│   ├── Configmap mounting Json
+│   ├── Parsing Json through Python Script
+│   └── Monitoring through python script
+├── Local Setup/
+│   ├── Jenkins Server (for CIs)
+│   ├── Docker (for image building)
+│   ├── Public GitHub (for code with version control)
+│   └── DockerHub (image push)
