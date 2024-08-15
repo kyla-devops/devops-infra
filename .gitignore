@@ -1,0 +1,6 @@
+# Exclude all hidden files and folders
+.terraform/
+
+# Explicitly include specific hidden files
+!.gitignore
+!.gitattributes
