@@ -1,5 +1,6 @@
 # Exclude all hidden files and folders
 .terraform/
+.devcontainer/
 
 # Explicitly include specific hidden files
 !.gitignore
