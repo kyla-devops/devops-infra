@@ -1,0 +1,65 @@
+.
+├── Planning and Requirements Gathering/
+│   ├── Define scope and objectives
+│   ├── Identify tools and technologies
+│   ├── Set up GitHub repository for version control
+│   └── Create high-level architecture diagram
+├── Infrastructure (via Terraform)/
+│   ├── Step 2.1: Setup Terraform Environment/
+│   │   ├── Install Terraform locally
+│   │   ├── Configure backend and state management (Redis)
+│   └── Step 2.2: Provision EC2 Instances/
+│       ├── Write Terraform scripts to provision EC2
+│       ├── Configure SSH access and security groups
+│   ├── Step 2.3: Kubernetes Setup/
+│   │   ├── Deploy Kubernetes cluster on EC2
+│   │   ├── Integrate with Terraform scripts
+│   │   └── Configure network settings
+│   ├── Step 2.4: Deploy Redis Database/
+│   │   ├── Provision Redis via Terraform
+│   │   └── Configure Redis for user data and Terraform state
+│   ├── Step 2.5: S3 Bucket Configuration/
+│   │   ├── Set up S3 bucket via Terraform
+│   │   └── Implement bucket policies and IAM roles
+│   └── Step 2.6: Ingress Load Balancer/
+│       └── Deploy and configure Ingress controller
+├── Application Deployment/
+│   ├── Step 3.1: Deploy FE Application/
+│   │   ├── Set up Nginx server in Kubernetes
+│   │   └── Manage deployment with Helm
+│   ├── Step 3.2: Configure SFTP Server/
+│   │   ├── Deploy SFTP server in Kubernetes
+│   │   └── Automate email notifications and monitoring
+│   ├── Step 3.3: Helm Configurations/
+│   │   ├── Create Helm charts for deployment
+│   │   └── Manage ConfigMaps and mount JSON files
+│   └── Step 3.4: Python Scripts for Monitoring and Parsing/
+│       ├── Write and deploy Python scripts for JSON parsing
+│       └── Automate monitoring tasks with Python
+├── Local Development and CI/CD Setup/
+│   ├── Step 4.1: Set Up Jenkins Server/
+│   │   ├── Install and configure Jenkins
+│   │   └── Create CI/CD pipelines
+│   ├── Step 4.2: Docker Image Building/
+│   │   ├── Write Dockerfiles for components
+│   │   └── Automate image building and push to DockerHub
+│   └── Step 4.3: Public GitHub Repository/
+│       ├── Host project code on GitHub
+│       └── Integrate with Jenkins for CI/CD
+├── Enhancements/
+│   ├── Step 5.1: Security Hardening/
+│   │   ├── Implement IAM roles and security groups
+│   │   └── Manage Secrets in Kubernetes
+│   ├── Step 5.2: Monitoring and Logging/
+│   │   ├── Set up Prometheus for monitoring
+│   │   └── Deploy ELK stack for logging
+│   ├── Step 5.3: High Availability and Scaling/
+│   │   ├── Enable auto-scaling for EC2 and Kubernetes
+│   │   └── Set up multi-AZ deployments
+│   └── Step 5.4: Backup and Disaster Recovery/
+│       ├── Configure Redis and S3 backups
+│       └── Implement disaster recovery procedures
+├── Documentation/
+│   ├── Step 6.1: Infrastructure Documentation/
+│   │   ├── Document setup and architecture
+│   │   └── Include diagrams
