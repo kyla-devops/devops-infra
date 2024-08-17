@@ -9,5 +9,5 @@ variable user {
 }
 variable policy_name {
     type = list(string)
-    default = ["DevOps-Policy","../user-creation/devops-policy.json"]
+    default = ["DevOps-Policy","../../templates/user-creation/devops-policy.json"]
 }
