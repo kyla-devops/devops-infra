@@ -1,1 +1,1 @@
-VPC module is to be run with devops-user which is created through as part of 00user-creation terraform setup.
+VPC module is to be run with devops-user which is created as part of 00user-creation terraform setup.
