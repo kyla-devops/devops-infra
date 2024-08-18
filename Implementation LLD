@@ -1,15 +1,15 @@
 .
 └── Infrastructure/
-    ├── Create root account on AWS Console ✅
-    ├── Create admin user in AWS Console (to be used in terraform for admin tasks) ✅
+    ├── Create root account on AWS Console 
+    ├── Create admin user in AWS Console (to be used in terraform for admin tasks) 
     └── (via Terraform)/
-        ├── Create "DevOps-User" with EC2, S3, VPC policy permissions ✅
+        ├── Create "DevOps-User" with EC2, S3, VPC policy permissions 
         └── DevOps User/
-            ├── Create VPC/ ✅
-            │   ├── Create Private Subnet for EC2 ✅
+            ├── Create VPC/ 
+            │   ├── Create Private Subnet for EC2 
             │   ├── Create Security Group (allow necessary ports for ssh)
-            │   ├── Create Internet Gateway (allows traffic to/from internet) ✅
-            │   ├── Create Public Subnet ✅
+            │   ├── Create Internet Gateway (allows traffic to/from internet) 
+            │   ├── Create Public Subnet 
             │   ├── Create NAT Gateway
             │   ├── Create ElasticIP (optional)
             │   ├── Create Route-Table
