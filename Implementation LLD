@@ -15,4 +15,4 @@
             │   ├── Create Route-Table
             │   ├── Create Route-Table Association
             │   └── Create Network Access Control Lists (phase-2)
-            └── Create EC2 Instance
+            └── Create EC2 Instance.
