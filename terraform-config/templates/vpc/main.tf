@@ -42,7 +42,19 @@ resource "aws_security_group" "devops-security-group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["103.16.69.0/24"]
+    cidr_blocks = ["103.16.69.0/24"] #kyla ip-range
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["122.171.19.0/24"] #srinivas ip-range
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0

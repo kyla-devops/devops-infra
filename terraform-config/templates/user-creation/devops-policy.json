@@ -56,7 +56,8 @@
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstanceAttribute",
                 "ec2:DescribeVolumes",
-                "ec2:DescribeInstanceCreditSpecifications"
+                "ec2:DescribeInstanceCreditSpecifications",
+                "EC2: AuthorizeSecurityGroupIngress"
             ],
             "Resource": "*"
         }        
