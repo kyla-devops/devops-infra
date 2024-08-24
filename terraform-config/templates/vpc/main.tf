@@ -84,15 +84,15 @@ resource "aws_route_table_association" "devops-public-route-table-association" {
   route_table_id = aws_route_table.devops-public-route-table.id
 }
 
-resource "aws_route_table" "devops-private-route-table" {
-  vpc_id = aws_vpc.devops-vpc.id
-  tags = {
-    Name = "DevOps-Private-Route-Table"
-  }
-}
+# resource "aws_route_table" "devops-private-route-table" {
+#   vpc_id = aws_vpc.devops-vpc.id
+#   tags = {
+#     Name = "DevOps-Private-Route-Table"
+#   }
+# }
 
-resource "aws_route_table_association" "devops-private-route-table-association" {
-  count = 2
-  subnet_id = aws_subnet.devops-private-subnet[count.index].id
-  route_table_id = aws_route_table.devops-private-route-table.id
-}
+# resource "aws_route_table_association" "devops-private-route-table-association" {
+#   count = 2
+#   subnet_id = aws_subnet.devops-private-subnet[count.index].id
+#   route_table_id = aws_route_table.devops-private-route-table.id
+# }
