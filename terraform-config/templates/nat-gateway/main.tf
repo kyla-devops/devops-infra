@@ -3,10 +3,10 @@ provider "aws" {
     profile = "devops-user-profile"
 }
 
-data "aws_subnets" "devops-public-subnets" {
+data "aws_subnet" "devops-public-subnet" {
   filter {
     name   = "tag:Name"
-    values = ["DevOps-Public-Subnet*"]
+    values = ["DevOps-Public-Subnet-0"]
   }
 }
 
@@ -33,7 +33,7 @@ resource "aws_eip" "devops-eip" {
 
 resource "aws_nat_gateway" "devops-nat-gateway" {
   allocation_id = aws_eip.devops-eip.id
-  subnet_id = data.aws_subnets.devops-public-subnets.ids[1]
+  subnet_id = data.aws_subnet.devops-public-subnet.id
   tags = {
     Name = "DevOps-NAT-Gateway"
   }

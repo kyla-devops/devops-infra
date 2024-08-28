@@ -45,7 +45,7 @@ resource "aws_security_group" "devops-public-security-group" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["103.16.69.0/24","122.171.19.0/24"] #kyla & srinivas ip-range
+    cidr_blocks = ["103.16.69.0/24","121.241.130.0/24","122.171.19.0/24"] #kyla2 & srinivas1 ip-range
   }
   ingress {
     from_port   = 80
@@ -77,7 +77,7 @@ resource "aws_security_group" "devops-private-security-group" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.3.51/32","65.2.183.253/32"] #bastion private & public ip
+    cidr_blocks = ["10.0.3.233/32"] #bastion private ip
   }
   egress {
     from_port   = 0
