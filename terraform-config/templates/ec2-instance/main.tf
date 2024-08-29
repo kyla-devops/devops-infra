@@ -49,6 +49,7 @@ resource "aws_instance" "devops-private-ec2" {
   security_groups = [data.aws_security_group.devops-private-security-group.id]
   key_name = var.key-name
   associate_public_ip_address = false
+  # user_data = file("../../templates/ec2-instance/apache.sh")
   tags = {
     Name = "DevOps-Private-EC2-${count.index}"
   }
