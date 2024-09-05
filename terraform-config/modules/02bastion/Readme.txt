@@ -41,3 +41,5 @@ Follow the below steps to configure reverse-proxy (nginx):
             }
         }
 4. Restart the proxy server: sudo systemctl restart nginx
+
+MAKE SURE TO UPDATE THE SSH CONFIG ON LOCAL SYSTEM WITH BASTION'S PUBLIC IP ONCE INSTANCE IS RESTARTED: vi ~/.ssh/config
