@@ -1,0 +1,78 @@
+- name: Setting Up Required Kubernetes Dependencies
+  hosts: private_ec2s
+  become: yes
+  environment:
+    http_proxy: http://10.0.3.233:3128
+    https_proxy: http://10.0.3.233:3128
+    no_proxy: localhost,127.0.0.1
+  tasks:
+    - name: Install Dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg2
+        state: present
+        update_cache: yes
+        
+    - name: Add Docker GPG-Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT Repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Enable and Start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Create directory for APT Keyrings
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+    
+    - name: Download and Convert Kubernetes APT GPG-Key
+      ansible.builtin.shell: |
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key |
+        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Add Kubernetes Repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+        filename: kubernetes
+        state: present
+      become: yes
+
+    - name: Install Kubernetes Components
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+        update_cache: yes
+
+    - name: Disable Swap
+      command: swapoff -a
+
+    - name: Comment-out swap
+      replace:
+        path: /etc/fstab
+        regexp: '^/swap.img'
+        replace: '#/swap.img'
