@@ -10,19 +10,19 @@ We have to set passwordless login to private-ec2s:
     6. Perform same step-5 for all private-ec2 instances and exit.
     7. Edit the local ssh config to set Forward-proxy: vi ~/.ssh/config
         Host bastion
-        HostName 13.201.123.161 #bastion-public-ip
+        HostName  <bastion-public-ip>
         User ubuntu
         IdentityFile ~/.ssh/devops-key-pair.pem
         ForwardAgent yes
 
         Host private-ec2-0
-        HostName 10.0.2.201 #private-ec2-0-private-ip
+        HostName <private-ec2-0-private-ip>
         User ubuntu
         ProxyJump bastion
         IdentityFile ~/.ssh/key
 
         Host private-ec2-1
-        HostName 10.0.1.197 #private-ec2-1-private-ip
+        HostName <private-ec2-1-private-ip>
         User ubuntu
         ProxyJump bastion
         IdentityFile ~/.ssh/key
@@ -52,10 +52,9 @@ Set forward-proxy for private-ec2s:
     [private_ec2s:vars]
     ansible_ssh_common_args='-o ProxyJump=bastion'
 
-2. Creating playbook to install required dependencies:
-Downloading some required dependencies, docker and starting docker.
+2. Creating playbooks to install required dependencies. Comments added to each task.
 
-**************************Kubernetes dependency download issue***************************
+**************************Kubernetes dependency download issue (not required to address - fixed in playbooks directly)***************************
 If we run the commonly used task to download Kubernetes apt repository, we will find the following configuration everywhere:
 - name: Add Kubernetes APT repository
       apt_repository:
@@ -106,16 +105,3 @@ We have to incorporate same via tasks in ansible:
 
 This will download the Kubernetes repository as required.
 ********************************************************************************************************
-Below 2 task components are required because Kubernetes assume that system's memory is managed by single memory-management.
-In case, swap is enabled, it can lead to unpredictable performance and stability issues.
-
-This task is defined to disable swap at runtime.
-    - name: Disable Swap
-      command: swapoff -a
-
-This task is a added as a safety measure to disable the swap at configuration level so in case the system restarts, swap should not get enabled again.
-    - name: Comment-out swap
-      replace:
-        path: /etc/fstab
-        regexp: '^/swap.img'
-        replace: '#/swap.img'

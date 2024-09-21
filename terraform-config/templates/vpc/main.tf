@@ -57,7 +57,7 @@ resource "aws_security_group" "devops-public-security-group" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.2.201/32","10.0.1.197/32"] #private ec2-0 & ec2-1 private ip
+    cidr_blocks = ["10.0.2.229/32","10.0.1.74/32"] #private ec2-0 & ec2-1 private ip
   }
   egress {
     from_port   = 0

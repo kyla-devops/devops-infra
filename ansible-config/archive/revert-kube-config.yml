@@ -1,0 +1,81 @@
+- name: Remove Kubernetes Dependencies
+  hosts: private_ec2s
+  become: yes
+  environment:
+    http_proxy: http://10.0.3.233:3128
+    https_proxy: http://10.0.3.233:3128
+    no_proxy: localhost,127.0.0.1
+  tasks:
+    - name: Remove Kubernetes Components
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: absent
+        update_cache: yes
+
+    - name: Remove Docker
+      apt:
+        name: docker-ce
+        state: absent
+        update_cache: yes
+
+    - name: Remove Docker APT Repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: absent
+
+    - name: Remove Docker GPG-Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: absent
+
+    - name: Remove Kubernetes Repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+        state: absent
+
+    - name: Remove Kubernetes APT GPG-Key
+      file:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        state: absent
+
+    - name: Remove files in APT Keyrings directory
+      file:
+        path: /etc/apt/keyrings/
+        state: directory
+        recurse: yes
+        mode: '0755'
+      
+    - name: Remove APT Keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: absent
+
+    - name: Re-enable Swap
+      replace:
+        path: /etc/fstab
+        regexp: '^#\/swap.img'
+        replace: '/swap.img'
+
+    - name: Re-enable Swap
+      command: swapon -a
+      ignore_errors: yes  # Ignore errors if swap is not configured
+
+    - name: Stop and Disable Docker
+      systemd:
+        name: docker
+        state: stopped
+        enabled: no
+  
+    - name: Remove Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - docker-ce-rootless-extras
+          - docker-compose-plugin
+          - docker-buildx-plugin
+        state: absent
+        update_cache: yes

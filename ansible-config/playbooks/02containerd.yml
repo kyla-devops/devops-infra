@@ -1,0 +1,133 @@
+- name: Setting Up Containerd as CRI
+  hosts: master
+  become: yes
+  environment:
+    http_proxy: http://10.0.3.233:3128
+    https_proxy: http://10.0.3.233:3128
+    no_proxy: localhost,127.0.0.1
+  tasks:
+    #With latest Ubuntu version, this path may not exist to store the keys, so running a task to create it manually.
+    - name: Create Directory for Keys
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+    
+    #Here we are downloading the Docker GPG Key which is required to pull the docker repo from internet like we use tokens/passwords.
+    - name: Download Docker GPG Key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    #Here we are passing the key downloaded in last task to add docker stable repo in our apt repository.
+    #echo is used to print what will be added in /etc/apt/sources.list.d/docker.list file.
+    #debian is the package repository.
+    #arch=$(dpkg --print-architecture) will dynamically fetch the system architecture and set it in arch variable.
+    #signed-by=/etc/apt/keyrings/docker.asc is used to pass the key downloaded so packages can be fetched.
+    #$(. /etc/os-release && echo \"$VERSION_CODENAME\") is fetching the os-release name to be set as distribution codename.
+    #stable is the version of the docker repo.
+    #tee /etc/apt/sources.list.d/docker.list will write the output of echo to the file.
+    #> /dev/null is used to the same output is not printed on the terminal.
+    # - name: Add Docker Repository
+    #   shell: |
+    #     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    - name: Add Docker APT Repository
+      apt_repository:
+        repo: deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable
+        state: present
+
+    #This will run apt-get update to make sure all packages till now are up to date.
+    - name: Update Apt Package
+      apt:
+        update_cache: yes
+
+    #Downloading Containerd package.
+    - name: Install Containerd
+      apt:
+        name: containerd.io
+        state: present
+
+    #Starting the Containerd package.
+    - name: Enable Containerd
+      systemd:
+        name: containerd
+        enabled: true
+        state: started
+
+    #Here we are fetching the status of Containerd and storing it in varible called containerd_status using register command.
+    - name: Get Containerd Status
+      command: systemctl status containerd
+      register: containerd_status
+      ignore_errors: yes
+
+    #Here we are printing the variable captured in the previous task as a debug message. var_name.stdout is the function being called.
+    - name: Print Containerd Status
+      debug:
+        msg: "{{ containerd_status.stdout_lines }}"
+
+    #We are deleting the pre-exisitng containerd config file because most lines are commented/not-required in the file and we will add the the required data ourselves in the below task.
+    - name: Delete Containerd Config File
+      file:
+        path: /etc/containerd/config.toml
+        state: absent
+
+    #Creating an empty file to add the configuration to avoid errors.
+    - name: Create Empty Containerd Config File
+      file:
+        path: /etc/containerd/config.toml
+        state: touch
+        mode: '0755'
+
+    #Here we are copying the data from local file to out server file path.
+    #src is defining the path of local file. {{ playbook_dir }} refers to the path where the playbook is present and rest is the actual path in the playbook directory.
+    #dest is the path of file where the data will be added. It will not append the data so all the data will not duplicate if playbook is run multiple times.
+    - name: Add Containerd Config Data
+      copy:
+        src: "{{ playbook_dir }}/containerd_config.toml"
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: '0755'
+
+    #Creating directory to add proxy configuration file.
+    - name: Create Containerd Proxy Directory
+      file:
+        path: /etc/systemd/system/containerd.service.d
+        state: directory
+        mode: '0755'
+
+    #It will add the block configuration in the path mentioned.
+    #create: yes will create the file if not present. It will not create any parent directories if absent, that is why previous task is added.
+    - name: Add Proxy Configuration for Containerd
+      blockinfile:
+        path: /etc/systemd/system/containerd.service.d/http-proxy.conf
+        block: |
+          [Service]
+          Environment="HTTP_PROXY=http://10.0.3.233:3128"
+          Environment="HTTPS_PROXY=http://10.0.3.233:3128"
+          Environment="NO_PROXY=localhost,127.0.0.1"
+        create: yes
+        mode: '0644'
+
+    #Reloading the system to apply configurations.
+    - name: Reload Deamon to Apply Changes
+      command: systemctl daemon-reload
+
+    #Restarting containerd to apply updated configurations.
+    - name: Restart Containerd
+      service:
+        name: containerd
+        state: restarted
+    
+    #Here we are fetching the status of Containerd and storing it in varible called containerd_status using register command.
+    - name: Get Containerd Status
+      command: systemctl status containerd
+      register: containerd_status
+      ignore_errors: yes
+
+    #Here we are printing the variable captured in the previous task as a debug message. var_name.stdout is the function being called.
+    #Executing this task to make sure containerd is running after all the changes applied.
+    - name: Print Containerd Status
+      debug:
+        msg: "{{ containerd_status.stdout_lines }}"
