@@ -1,0 +1,58 @@
+- name: Setting Up Kubeadm
+  hosts: master
+  become: yes
+  environment:
+    http_proxy: http://10.0.3.233:3128
+    https_proxy: http://10.0.3.233:3128
+    no_proxy: localhost,127.0.0.1
+  tasks:
+    #Keyring is like a secure-key which is required to pull the kubernetes repo from internet like we use tokens/passwords.
+    - name: Add Kubernetes APT Keyring
+      shell: |
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    #Here we are passing the keyring downloaded in last task to add kubernetes stable 1.30 version in our apt repository.
+    - name: Add Kubernetes APT Repository
+      copy:
+        content: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /'
+        dest: /etc/apt/sources.list.d/kubernetes.list
+        mode: '0644'
+
+    #This will run apt-get update to make sure all packages till now are up to date.
+    - name: Update APT Package
+      apt:
+        update_cache: yes
+
+    #Downloading required kubernetes dependencies
+    - name: Install Kube Dependencies
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    #Hold is required to make sure the dependencies does not update and create an issue for future developments.
+    - name: Hold Kube Dependencies Current Version
+      command: apt-mark hold kubelet kubeadm kubectl
+    
+    #Here we are pulling the kubernetes images prior to initiating the control-plane to make sure everything is downloaded as expected. If we do not run this task, kubeadm will automatically pull images while initiation.
+    - name: Pull Kubernetes Images
+      command: kubeadm config images pull
+      register: kubeadm_pull_output
+
+    #Printing output to make sure images were downloaded properly.
+    - name: Print Kubeadm Images Output
+      debug:
+        var: kubeadm_pull_output.stdout_lines
+
+    #Here we are initializing kubernetes control-plane and registering the output in kubeadm_output variable.
+    - name: Initialize Kubernetes Control Plane
+      become: yes
+      command: kubeadm init
+      register: kubeadm_output
+
+    #Printing output to capture necessary details i.e. join command which will be used to create node group.
+    - name: Print Control Plane Setup Output
+      debug:
+        var: kubeadm_output.stdout_lines

@@ -1,9 +1,9 @@
 [bastion]
-bastion ansible_host=13.201.123.161 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/devops-key-pair.pem
+bastion ansible_host=13.233.198.14 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/devops-key-pair.pem
 [master]
-private-ec2-0 ansible_host=10.0.2.201 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key
+private-ec2-0 ansible_host=10.0.2.229 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key
 [worker]
-private-ec2-1 ansible_host=10.0.1.197 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key
+private-ec2-1 ansible_host=10.0.1.74 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key
 
 [private_ec2s:children]
 master

@@ -1,0 +1,116 @@
+- name: Setting Up Required Kubernetes Pre-requisite Configurations
+  hosts: master
+  become: yes
+  environment:
+    http_proxy: http://10.0.3.233:3128
+    https_proxy: http://10.0.3.233:3128
+    no_proxy: localhost,127.0.0.1
+  tasks:
+    #This task components are required because Kubernetes assume that system's memory is managed by single memory-management.
+    #In case swap is enabled, it can lead to unpredictable performance and stability issues.
+    - name: Disable Swap
+      command: swapoff -a
+
+    #This task is a added as a safety measure to disable the swap at configuration level so in case the system restarts, swap should not get enabled again.
+    - name: Comment Swap Entries
+      replace:
+        path: /etc/fstab
+        regexp: '^(\S+\s+)(\S+\s+swap\s+\S+\s+\S+\s*)$'
+        replace: '# \1\2'
+    
+    #Here we are creating file for kubernetes config to be added.
+    - name: Create Kube-Modules File
+      file:
+        path: /etc/modules-load.d/k8s.conf
+        state: touch
+        mode: '0755'
+    
+    #The below kernel modules are added to the path file.
+    #overlay module is used in Kubernetes environments for overlay network drivers, which facilitate networking between containers across multiple hosts.
+    #br_netfilter module is used for enabling bridge-specific netfilter capabilities. In Kubernetes, it is often required for setting up networking rules and policies effectively, especially when using services of type NodePort or LoadBalancer.
+    - name: Add Kernel Modules for Kubernetes
+      blockinfile:
+        path: /etc/modules-load.d/k8s.conf
+        block: |
+          overlay
+          br_netfilter
+
+    #Here we are manually loading the added modules.
+    #modprobe is used to load kernel modules into the running kernel.
+    - name: Load Modules
+      modprobe:
+        name: "{{ item }}"
+      loop:
+        - overlay
+        - br_netfilter
+
+    #Creating dircetory for kuberntes system configurations.
+    - name: Create Kube-Config Directory
+      file:
+        path: /etc/sysctl.d/k8s.conf
+        state: touch
+        mode: '0755'
+
+    #Here we are updating the system kernel settings to allow ipv4 forward and enabling iptables for bridge connections. These are required configurations of kubernetes.
+    - name: Configure IP-Tables
+      blockinfile:
+        path: /etc/sysctl.d/k8s.conf
+        block: |
+          net.ipv4.ip_forward = 1
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+
+    #sysctl --system will apply any changes done to the system settings without reboot.
+    - name: Apply Settings without Reboot
+      command: sysctl --system
+
+    #Here we are capturing the changes made in the variable sysctl_output using register command.
+    - name: Capture IP-Table Values
+      command: sysctl net.ipv4.ip_forward net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables
+      register: sysctl_output
+
+    #Printing the captured variables in previous task as debug message using var.stdout.
+    #Running this task only to make sure the changes are properly made. Removal will not affect any flow.
+    - name: Print IP-Table Values
+      debug:
+        msg: "Set Values: {{ sysctl_output.stdout_lines }}"
+
+    #Here the CNI Plugins are downloaded at the destination path.
+    #CNI Plugins are essential for Kubernetes networking. They provide networking functionality required by Kubernetes pods, such as IP allocation, routing, and network isolation. 
+    - name: Download CNI Plugins
+      get_url:
+        url: https://github.com/containernetworking/plugins/releases/download/v1.4.0/cni-plugins-linux-amd64-v1.4.0.tgz
+        dest: /tmp/cni-plugins-linux-amd64-v1.4.0.tgz
+
+    #This directory is created to store the plugin data downloaded.
+    - name: Create CNI Bin Directory
+      file:
+        path: /opt/cni/bin
+        state: directory
+        mode: '0755'
+
+    #The plugin downloaded above was a tar file and here we are extracting the data to destination directory.
+    - name: Extract CNI Plugins
+      unarchive:
+        src: /tmp/cni-plugins-linux-amd64-v1.4.0.tgz
+        dest: /opt/cni/bin
+        remote_src: yes
+
+    #This will run apt-get update to make sure all packages till now are up to date.
+    - name: Update Apt Package
+      apt:
+        update_cache: yes
+
+    #Downloading required packages.
+    #ca-certificates is required to validate secure connections as many applications and services rely on it.
+    #curl is commonly used for fetching files and making HTTP requests.
+    #apt-transport-https allows apt to fetch packages over HTTPS, ensuring secure communication with package repositories.
+    #gpg provides tools for secure communication and encryption. It is often needed for package signing and verification.
+    - name: Install Packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - apt-transport-https
+          - gpg
+        state: present
